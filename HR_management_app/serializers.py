@@ -1,3 +1,3 @@
 
-from rest_framework import serializers
-from HR_management_app.models import User, Project, Development, Attendance
+# from rest_framework import serializers
+# from HR_management_app.models import User, Project, ProjectDevelopment, Attendance
