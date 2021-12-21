@@ -5,21 +5,26 @@ from HR_management_app.serializers import EmployeeSerializer, ProjectSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-# from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 # Create your views here.
 
 class AllUserView(ModelViewSet):
     """ get all Employees detail """
+    permission_classes = (IsAuthenticated,)
     serializer_class = EmployeeSerializer
     queryset = User.objects.all()
+
 
 
 class EmployeeView(APIView):
     """
     List all snippets, or create a new snippet.
     """
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, format=None):
         user = User.objects.all()
         serializer = EmployeeSerializer(user, many=True)
@@ -49,8 +54,9 @@ class EmployeeView(APIView):
 class ViewEmployees(APIView):
     """ get users
     """
+    authentication_classes = [JWTAuthentication]
+    permission_classes = (IsAuthenticated,)
     def get(self, request):
-        content = {'message': "Hello, Dinesh"}
         user = User.objects.all()
         serializer = EmployeeSerializer(user, many=True)
         return Response(serializer.data)
