@@ -8,7 +8,8 @@ from rest_framework import viewsets
 
 
 urlpatterns = [
-    path('', ViewEmployees.as_view(), name='hello'),
-    path('employeeview/', EmployeeView.as_view(), name='view_detail')
+    path('', CeoManage.as_view(), name='CEO Dashboard'),
+    path('HR_Managements/', HumanResources.as_view(), name='HR_Managements'),
+    path('Employee_Dashboard/', EmployeeView.as_view(), name='EmployeeDashboard')
 
 ]

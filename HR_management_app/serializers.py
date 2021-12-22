@@ -22,3 +22,5 @@ class ProjectSerializer(serializers.ModelSerializer):
         """ User serializer Meta class """
         model = Project
         fields = ['id', 'project_name', 'description', 'date_of_assign']
+
+
