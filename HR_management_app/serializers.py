@@ -14,6 +14,14 @@ class EmployeeSerializer(serializers.ModelSerializer):
                   'role', 'employment_date', 'contact', 'date_of_birth', 'address']
         extra_kwargs = {'password': {'write_only': True}}
 
+    def create(self, validated_data):
+        """ Create and return a new `User` instance, given the validated data."""
+        password = validated_data['password']
+        user = super(EmployeeSerializer, self).create(validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
 
 class ProjectSerializer(serializers.ModelSerializer):
     """ UserSerializer model class """
