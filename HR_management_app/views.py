@@ -1,5 +1,7 @@
 # from django.shortcuts import render
+from django.contrib.auth.hashers import make_password
 from django.http import HttpResponse, Http404
+from django.contrib.auth import authenticate, user_logged_in
 from rest_framework.generics import get_object_or_404
 from rest_framework.viewsets import ModelViewSet
 from HR_management_app.models import User, Project, ProjectDevelopment, Attendance
@@ -27,11 +29,14 @@ def get_object(id):
 #     else:
 #         raise Http404
 
+# def has(serializer):
+#     up = User.objects.get(email=serializer.data["email"])
+#     up.password = make_password(serializer.data["email"])
+#     up.save()
 
 class CeoManage(APIView):
     """ get users
     """
-
     # def dispatch(self, request, *args, **kwargs):
     #     view_responce = lambda x: super(CeoManage, self).dispatch(request, *args, **kwargs)
     #     if request.user.is_authenticated:
@@ -41,31 +46,9 @@ class CeoManage(APIView):
     #             pass
     #     return HttpResponse("You do not have permission")
 
-    def dispatch(self, request, *args, **kwargs):
-        # view_responce = lambda x: super(CeoManage, self).dispatch(request, *args, **kwargs)
-        if request.user.is_authenticated:
-            if request.user.role == "CEO":
-                return super(CeoManage, self).dispatch(request, *args, **kwargs)
-            # elif request.user.role == "HR":
-            #     pass
-        return HttpResponse("You do not have permission")
-
-
-    # def get(self, request):
-    #     obj = request.data
-    #     print(obj['email'])
-    #     print(obj)
-    #     user = User.objects.all()
-    #     for i in user:
-    #         role = i.role
-    #     print(role)
-    #     serializer = EmployeeSerializer(user, many=True)
-    #     return Response(serializer.data)
-
     def get(self, request, id=None):
         if id:
             user = User.objects.get(id=id)
-            print(user)
             serializer = EmployeeSerializer(user)
             return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
 
@@ -75,7 +58,6 @@ class CeoManage(APIView):
 
     def post(self, request):
         serializer = EmployeeSerializer(data=request.data)
-        print(serializer)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -95,6 +77,16 @@ class CeoManage(APIView):
         print(user)
         user.delete()
         return Response({"status": "success", "data": "Item Deleted"})
+
+
+class CeoProjects(generics.ListAPIView):
+    """ company head can get project detail """
+    serializer_class = ProjectSerializer
+    queryset = User.objects.all()
+
+    pass
+
+# class CeoProjectDevelopment()
 
 
 class HumanResources(APIView):
@@ -132,6 +124,8 @@ class EmployeeView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
+        detail = request.data
+        print(detail)
         user = User.objects.all()
         serializer = EmployeeSerializer(user, many=True)
         return Response(serializer.data)
