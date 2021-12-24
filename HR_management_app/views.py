@@ -13,17 +13,43 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # Create your views here.
 
+def get_object(id):
+    try:
+        return User.objects.get(id=id)
+    except User.DoesNotExist:
+        raise Http404
+
+
+# def check_role():
+#     user = User.objects.get('role' == 'CEO')
+#     if user:
+#         return user
+#     else:
+#         raise Http404
+
+
 class CeoManage(APIView):
     """ get users
     """
+
     # def dispatch(self, request, *args, **kwargs):
-    #     VIEW_RESPONSE = lambda x: super(CeoManage, self).dispatch(request, *args, **kwargs)
+    #     view_responce = lambda x: super(CeoManage, self).dispatch(request, *args, **kwargs)
     #     if request.user.is_authenticated:
     #         if request.user.role == "CEO":
-    #             return VIEW_RESPONSE(None)
+    #             return view_responce(None)
     #         elif request.user.role == "HR":
     #             pass
     #     return HttpResponse("You do not have permission")
+
+    def dispatch(self, request, *args, **kwargs):
+        # view_responce = lambda x: super(CeoManage, self).dispatch(request, *args, **kwargs)
+        if request.user.is_authenticated:
+            if request.user.role == "CEO":
+                return super(CeoManage, self).dispatch(request, *args, **kwargs)
+            # elif request.user.role == "HR":
+            #     pass
+        return HttpResponse("You do not have permission")
+
 
     # def get(self, request):
     #     obj = request.data
@@ -38,16 +64,25 @@ class CeoManage(APIView):
 
     def get(self, request, id=None):
         if id:
-            item = User.objects.get(id=id)
-            serializer = EmployeeSerializer(item)
+            user = User.objects.get(id=id)
+            print(user)
+            serializer = EmployeeSerializer(user)
             return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
 
         user = User.objects.all()
         serializer = EmployeeSerializer(user, many=True)
         return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
 
+    def post(self, request):
+        serializer = EmployeeSerializer(data=request.data)
+        print(serializer)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def patch(self, request, id=None):
-        user = User.objects.get(id=id)
+        user = get_object(id)
         serializer = EmployeeSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -56,8 +91,9 @@ class CeoManage(APIView):
             return Response({"status": "error", "data": serializer.errors})
 
     def delete(self, request, id=None):
-        item = get_object_or_404(User, id=id)
-        item.delete()
+        user = get_object(id)
+        print(user)
+        user.delete()
         return Response({"status": "success", "data": "Item Deleted"})
 
 
@@ -107,4 +143,3 @@ class EmployeeView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-

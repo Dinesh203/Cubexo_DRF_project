@@ -1,5 +1,6 @@
 
 from rest_framework import serializers
+from django.contrib.auth.hashers import make_password
 from HR_management_app.models import User, Project, ProjectDevelopment, Attendance
 from django.contrib.auth.hashers import make_password
 
@@ -18,7 +19,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         """ Create and return a new `User` instance, given the validated data."""
         password = validated_data['password']
         user = super(EmployeeSerializer, self).create(validated_data)
-        user.set_password(password)
+        user.make_password(password)
         user.save()
         return user
 
