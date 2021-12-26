@@ -1,5 +1,5 @@
 from django.contrib import admin
-from HR_management_app.models import User, Project, ProjectDevelopment, Attendance
+from .models import User, Project, ProjectDevelopment, Attendance
 # Register your models here.
 
 admin.site.register(User)

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
-from HR_management_app.models import User, Project, ProjectDevelopment, Attendance
+from .models import User, Project, ProjectDevelopment, Attendance
 from django.contrib.auth.hashers import make_password
 
 
@@ -23,9 +23,27 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    """ UserSerializer model class """
+    """ ProjectSerializer model class """
 
     class Meta:
-        """ User serializer Meta class """
+        """ User Project serializer Meta class """
         model = Project
-        fields = ['id', 'project_name', 'description', 'date_of_assign']
+        fields = '__all__'
+
+
+class ProjectDevelopmentSerializer(serializers.ModelSerializer):
+    """ ProjectDevelopment Serializer model class """
+
+    class Meta:
+        """ User ProjectDevelopment serializer Meta class """
+        model = ProjectDevelopment
+        fields = '__all__'
+
+
+class AttendanceSerializer(serializers.ModelSerializer):
+    """ AttendanceSerializer model class """
+
+    class Meta:
+        """ Attendance serializer Meta class """
+        model = Attendance
+        fields = '__all__'

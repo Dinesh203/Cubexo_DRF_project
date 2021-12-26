@@ -1,11 +1,9 @@
-# from django.shortcuts import render
-from django.contrib.auth.hashers import make_password
+
 from django.http import HttpResponse, Http404
 from django.contrib.auth import authenticate, user_logged_in
-from rest_framework.generics import get_object_or_404
 from rest_framework.viewsets import ModelViewSet
-from HR_management_app.models import User, Project, ProjectDevelopment, Attendance
-from HR_management_app.serializers import EmployeeSerializer, ProjectSerializer
+from .models import User, Project, ProjectDevelopment, Attendance
+from .serializers import EmployeeSerializer, ProjectSerializer, ProjectDevelopmentSerializer, AttendanceSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import viewsets, status, generics
@@ -84,56 +82,37 @@ class CeoProjects(generics.ListAPIView):
     serializer_class = ProjectSerializer
     queryset = User.objects.all()
 
-    pass
-
 # class CeoProjectDevelopment()
 
 
-class HumanResources(APIView):
-    """ Human resource management system.
-    """
-    authentication_classes = [JWTAuthentication]
-    permission_classes = (IsAuthenticated,)
-
-    def get(self, request):
-        user = User.objects.all()
-        serializer = EmployeeSerializer(user, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = EmployeeSerializer(data=request.data)
-        print(serializer)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class AllEmployeeView(ModelViewSet):
+class HrAllEmployeeView(ModelViewSet):
     """ get all Employees detail """
-    permission_classes = (IsAuthenticated,)
     serializer_class = EmployeeSerializer
     queryset = User.objects.all()
+
+
+class EmployeeDetail(APIView):
+    """
+    List all snippets, or create a new snippet.
+    """
+    print("enter")
+    # permission_classes = (IsAuthenticated,)
+    http_method_names = ['get', 'head']
+
+    def get(self, request):
+        serializer = EmployeeSerializer(request.user)
+        return Response(serializer.data)
 
 
 class EmployeeView(APIView):
     """
     List all snippets, or create a new snippet.
     """
-    pass
-    permission_classes = (IsAuthenticated,)
-
-    def get(self, request):
-        detail = request.data
-        print(detail)
-        user = User.objects.all()
-        serializer = EmployeeSerializer(user, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = EmployeeSerializer(data=request.data)
-        print(serializer)
+    def patch(self, request, id=None):
+        project = Project.objects.all()
+        serializer = ProjectSerializer(project, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": "success", "data": serializer.data})
+        else:
+            return Response({"status": "error", "data": serializer.errors})

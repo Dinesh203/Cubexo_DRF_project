@@ -59,7 +59,7 @@ class User(AbstractUser):
 class Project(models.Model):
     """ Assign projects to employees """
     project_name = models.CharField(max_length=50, default=None, blank=False)
-    description = models.TextField(max_length=1000, blank=False)
+    descriptions = models.TextField(max_length=1000, blank=False)
     date_of_assign = models.DateField(auto_now_add=True)
 
     def __str__(self):
