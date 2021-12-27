@@ -37,16 +37,16 @@ class User(AbstractUser):
     """ User table """
     username = None
     # override username and email(unique)
-    employee_id = models.CharField(max_length=50, default=0, blank=False, null=False)
-    name = models.CharField(max_length=100, null=False)
-    email = models.EmailField(max_length=200, unique=True, blank=False)
+    employee_id = models.CharField(max_length=50, default=0)
+    name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=200, unique=True)
     gender = models.CharField(max_length=200, choices=GENDER_CHOICE, blank=True)
     is_employee = models.BooleanField(default=False)
     role = models.CharField(max_length=100, choices=POSITION_CHOICES, default=None, null=True)
     employment_date = models.DateField(auto_now_add=True)
-    contact = models.CharField(max_length=15, blank=False)
+    contact = models.CharField(max_length=15)
     date_of_birth = models.DateField(default=None, blank=True, null=True)
-    address = models.CharField(max_length=15, default=None, blank=True, null=True)
+    address = models.CharField(max_length=15, default="", blank=True)
 
     USERNAME_FIELD = 'email'
     objects = CustomUserManager()
@@ -58,8 +58,8 @@ class User(AbstractUser):
 
 class Project(models.Model):
     """ Assign projects to employees """
-    project_name = models.CharField(max_length=50, default=None, blank=False)
-    descriptions = models.TextField(max_length=1000, blank=False)
+    project_name = models.CharField(max_length=50, default=None)
+    descriptions = models.TextField(max_length=1000)
     date_of_assign = models.DateField(auto_now_add=True)
 
     def __str__(self):

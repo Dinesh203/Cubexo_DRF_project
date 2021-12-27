@@ -1,4 +1,3 @@
-
 from django.http import HttpResponse, Http404
 from django.contrib.auth import authenticate, user_logged_in
 from rest_framework.viewsets import ModelViewSet
@@ -7,47 +6,45 @@ from .serializers import EmployeeSerializer, ProjectSerializer, ProjectDevelopme
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import viewsets, status, generics
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 # Create your views here.
 
-def get_object(id):
+def get_object(pk):
+    """ get User detail """
     try:
-        return User.objects.get(id=id)
+        return User.objects.get(pk=pk)
+    except Exception as e:
+        Response(e)
+
+
+def get_project_object(pk):
+    """ get User detail """
+    try:
+        return Project.objects.get(pk=pk)
     except User.DoesNotExist:
         raise Http404
 
 
-# def check_role():
+# def check_role_ceo():
+#     """ Check Role"""
 #     user = User.objects.get('role' == 'CEO')
 #     if user:
 #         return user
 #     else:
 #         raise Http404
 
-# def has(serializer):
-#     up = User.objects.get(email=serializer.data["email"])
-#     up.password = make_password(serializer.data["email"])
-#     up.save()
 
 class CeoManage(APIView):
     """ get users
     """
-    # def dispatch(self, request, *args, **kwargs):
-    #     view_responce = lambda x: super(CeoManage, self).dispatch(request, *args, **kwargs)
-    #     if request.user.is_authenticated:
-    #         if request.user.role == "CEO":
-    #             return view_responce(None)
-    #         elif request.user.role == "HR":
-    #             pass
-    #     return HttpResponse("You do not have permission")
 
     def get(self, request, id=None):
         if id:
-            user = User.objects.get(id=id)
-            serializer = EmployeeSerializer(user)
+            user = User.objects.filter(id=id)
+            if not user:
+                return Response({"status": "invalid username or id"})
+            serializer = EmployeeSerializer(get_object(id))
             return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
 
         user = User.objects.all()
@@ -77,12 +74,24 @@ class CeoManage(APIView):
         return Response({"status": "success", "data": "Item Deleted"})
 
 
-class CeoProjects(generics.ListAPIView):
+class CeoProjects(generics.ListCreateAPIView):
     """ company head can get project detail """
-    serializer_class = ProjectSerializer
-    queryset = User.objects.all()
+    try:
+        serializer_class = ProjectSerializer
+        queryset = Project.objects.all()
+    except Exception as e:
+        Response(e)
 
-# class CeoProjectDevelopment()
+class CeoUpdateProject(generics.RetrieveUpdateDestroyAPIView):
+    """ company head can retrieve Update and delete project detail """
+    lookup_field = 'pk'
+    try:
+        serializer_class = ProjectSerializer
+        queryset = Project.objects.all()
+    except Exception as e:
+        Response(e)
+
+    # class CeoProjectDevelopment()
 
 
 class HrAllEmployeeView(ModelViewSet):
@@ -95,11 +104,11 @@ class EmployeeDetail(APIView):
     """
     List all snippets, or create a new snippet.
     """
-    print("enter")
-    # permission_classes = (IsAuthenticated,)
-    http_method_names = ['get', 'head']
 
     def get(self, request):
+        # if request.auth is None:
+        #     pass
+        user = request.user
         serializer = EmployeeSerializer(request.user)
         return Response(serializer.data)
 
@@ -108,6 +117,7 @@ class EmployeeView(APIView):
     """
     List all snippets, or create a new snippet.
     """
+
     def patch(self, request, id=None):
         project = Project.objects.all()
         serializer = ProjectSerializer(project, data=request.data, partial=True)
@@ -116,3 +126,26 @@ class EmployeeView(APIView):
             return Response({"status": "success", "data": serializer.data})
         else:
             return Response({"status": "error", "data": serializer.errors})
+
+
+class EmployeeProject(APIView):
+    """
+    get projects details.
+    """
+    http_method_names = ['get', 'head']
+
+    def get(self, request):
+        project = Project.objects.get('user_id')
+        # detail = request.user
+        # print("detail:", detail)
+        serializer = ProjectSerializer(request.user, many=True)
+        return Response(serializer.data)
+
+    # def dispatch(self, request, *args, **kwargs):
+    #     view_responce = lambda x: super(CeoManage, self).dispatch(request, *args, **kwargs)
+    #     if request.user.is_authenticated:
+    #         if request.user.role == "CEO":
+    #             return view_responce(None)
+    #         elif request.user.role == "HR":
+    #             pass
+    #     return HttpResponse("You do not have permission")
