@@ -1,6 +1,9 @@
+import datetime
+
 from django.db import models
 from .manager import CustomUserManager
 from django.contrib.auth.models import AbstractUser
+import datetime
 
 # Create your models here.
 
@@ -59,18 +62,28 @@ class User(AbstractUser):
 class Project(models.Model):
     """ Assign projects to employees """
     project_name = models.CharField(max_length=50, default=None)
+    project_owner = models.CharField(max_length=50, default=None, null=True)
+    budget = models.CharField(max_length=15, null=True)
+    owner_address = models.CharField(max_length=200, null=True, blank=True)
     descriptions = models.TextField(max_length=1000)
     date_of_assign = models.DateField(auto_now_add=True)
+    status = models.BooleanField(default=False)
 
     def __str__(self):
         return self.project_name
 
+    @property
+    def status_message(self):
+        return "Running" if self.status else "Closed"
+
 
 class ProjectDevelopment(models.Model):
     """ Project Development status """
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    status = models.TextField(max_length=1000)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project')
+    team_leader = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_leader')
+    team = models.ManyToManyField(User)
+    dead_line = models.DateField(default=None)
+    progress = models.TextField(max_length=1000, null=True, default='working on')
 
     def __str__(self):
         return self.project.project_name

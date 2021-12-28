@@ -26,13 +26,23 @@ def get_project_object(pk):
         raise Http404
 
 
-# def check_role_ceo():
-#     """ Check Role"""
-#     user = User.objects.get('role' == 'CEO')
-#     if user:
-#         return user
-#     else:
-#         raise Http404
+def check_role_ceo():
+    """ Check Role"""
+    user = User.objects.get('role' == 'CEO')
+    if user:
+        return user
+    else:
+        raise Http404
+
+
+class projectStatus(APIView):
+    """ Project status change"""
+    def patch(self, request, pk):
+        project = Project.objects.get(pk=pk)
+
+        project.status = False if project.status else True
+        project.save()
+
 
 
 class CeoManage(APIView):
@@ -82,16 +92,15 @@ class CeoProjects(generics.ListCreateAPIView):
     except Exception as e:
         Response(e)
 
+
 class CeoUpdateProject(generics.RetrieveUpdateDestroyAPIView):
     """ company head can retrieve Update and delete project detail """
     lookup_field = 'pk'
-    try:
-        serializer_class = ProjectSerializer
-        queryset = Project.objects.all()
-    except Exception as e:
-        Response(e)
+    serializer_class = ProjectSerializer
+    queryset = Project.objects.all()
 
-    # class CeoProjectDevelopment()
+
+# class
 
 
 class HrAllEmployeeView(ModelViewSet):
@@ -100,32 +109,37 @@ class HrAllEmployeeView(ModelViewSet):
     queryset = User.objects.all()
 
 
-class EmployeeDetail(APIView):
-    """
-    List all snippets, or create a new snippet.
-    """
+class HrUpdateEmployee(generics.RetrieveUpdateDestroyAPIView):
+    """ Hr can Update Retrieves and Delete employees details """
+    lookup_field = 'pk'
+    serializer_class = EmployeeSerializer
+    queryset = User.objects.all()
 
+
+class HrProjectView(APIView):
+    """ Hr can get all and retrieve project details"""
+    def get(self, request, pk=None):
+        if pk:
+            print(pk)
+            user = User.objects.filter(pk=pk)
+            print(user)
+            if not user:
+                return Response({'status': 'invalid username or id'})
+            serializer = ProjectSerializer(Project.objects.get(pk=pk))
+            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+        serializer = ProjectSerializer(Project.objects.all(), many=True)
+        return Response(serializer.data)
+
+
+class EmployeeDetail(APIView):
+    """ Employee can get self profile details.
+    """
     def get(self, request):
         # if request.auth is None:
         #     pass
         user = request.user
         serializer = EmployeeSerializer(request.user)
         return Response(serializer.data)
-
-
-class EmployeeView(APIView):
-    """
-    List all snippets, or create a new snippet.
-    """
-
-    def patch(self, request, id=None):
-        project = Project.objects.all()
-        serializer = ProjectSerializer(project, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"status": "success", "data": serializer.data})
-        else:
-            return Response({"status": "error", "data": serializer.errors})
 
 
 class EmployeeProject(APIView):
