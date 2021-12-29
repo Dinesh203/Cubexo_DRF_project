@@ -1,5 +1,4 @@
 from django.http import HttpResponse, Http404
-from django.contrib.auth import authenticate, user_logged_in
 from rest_framework.viewsets import ModelViewSet
 from .models import User, Project, ProjectDevelopment, Attendance
 from .serializers import EmployeeSerializer, ProjectSerializer, ProjectDevelopmentSerializer, AttendanceSerializer
@@ -9,14 +8,6 @@ from rest_framework import viewsets, status, generics
 
 
 # Create your views here.
-
-def get_object(pk):
-    """ get User detail """
-    try:
-        return User.objects.get(pk=pk)
-    except Exception as e:
-        Response(e)
-
 
 def get_project_object(pk):
     """ get User detail """
@@ -44,22 +35,19 @@ class projectStatus(APIView):
         project.save()
 
 
-
 class CeoManage(APIView):
     """ get users
     """
-
-    def get(self, request, id=None):
-        if id:
-            user = User.objects.filter(id=id)
+    def get(self, request, pk=None):
+        if pk:
+            user = User.objects.filter(pk=pk)
             if not user:
                 return Response({"status": "invalid username or id"})
-            serializer = EmployeeSerializer(get_object(id))
-            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
-
+            serializer = EmployeeSerializer(User.objects.get(pk=pk))
+            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
         user = User.objects.all()
         serializer = EmployeeSerializer(user, many=True)
-        return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = EmployeeSerializer(data=request.data)
@@ -68,39 +56,83 @@ class CeoManage(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self, request, id=None):
-        user = get_object(id)
-        serializer = EmployeeSerializer(user, data=request.data, partial=True)
+    def patch(self, request, pk=None):
+        if pk:
+            print("pk", pk)
+            try:
+                serializer_data = EmployeeSerializer(User.objects.get(id=pk), data=request.data, partial=True)
+            except Exception as e:
+                return HttpResponse(e)
+            print(serializer_data)
+            if serializer_data.is_valid():
+                serializer_data.save()
+                return Response({"status": "success", "data": serializer_data.data})
+            else:
+                return Response({"status": "error", "data": serializer_data.errors})
+        else:
+            return Response({"status": "invalid detail or attribute"})
+
+    def delete(self, request, pk=None):
+        if pk:
+            user = User.objects.filter(pk=pk)
+            if not user:
+                return Response({'status': 'page not found'})
+            user.delete()
+            return Response({"status": "success", "data": "Item Deleted"})
+        else:
+            return Response({'error': 'user id not found'})
+
+
+class CeoProjects(APIView):
+    """ company head can get project detail
+    """
+    def get(self, request, pk=None):
+        if pk:
+            project = Project.objects.filter(pk=pk)
+            if not project:
+                return Response({'status': 'invalid username or id'})
+            serializer = ProjectSerializer(Project.objects.get(pk=pk))
+            print(serializer)
+            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+        serializer = ProjectSerializer(Project.objects.all(), many=True)
+        return Response(serializer.data)
+
+
+class CeoUpdateProject(APIView):
+    """ company head can retrieve Update and delete project detail """
+    def post(self, request):
+        serializer = ProjectSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"status": "success", "data": serializer.data})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+        if pk:
+            serializer = ProjectSerializer(Project.objects.filter(id=pk), data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"status": "success", "data": serializer.data})
+            else:
+                return Response({"status": "error", "data": serializer.errors})
         else:
-            return Response({"status": "error", "data": serializer.errors})
+            return Response({"status": "invalid detail or attribute"})
 
-    def delete(self, request, id=None):
-        user = get_object(id)
-        print(user)
-        user.delete()
-        return Response({"status": "success", "data": "Item Deleted"})
-
-
-class CeoProjects(generics.ListCreateAPIView):
-    """ company head can get project detail """
-    try:
-        serializer_class = ProjectSerializer
-        queryset = Project.objects.all()
-    except Exception as e:
-        Response(e)
+    def delete(self, request, pk=None):
+        if pk:
+            project = Project.objects.filter(pk=pk)
+            if not project:
+                return Response({'status': 'id not found'})
+            project.delete()
+            return Response({"status": "success", "data": "Item Deleted"})
+        else:
+            return Response({'error': 'user id not found'})
 
 
-class CeoUpdateProject(generics.RetrieveUpdateDestroyAPIView):
-    """ company head can retrieve Update and delete project detail """
-    lookup_field = 'pk'
-    serializer_class = ProjectSerializer
-    queryset = Project.objects.all()
-
-
-# class
+class DevelopmentStatus(generics.ListCreateAPIView):
+    """ Ceo can get Project Development status and make update"""
+    serializer_class = ProjectDevelopmentSerializer
+    queryset = ProjectDevelopment.objects.all()
 
 
 class HrAllEmployeeView(ModelViewSet):
@@ -116,45 +148,30 @@ class HrUpdateEmployee(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
 
 
-class HrProjectView(APIView):
+class HrProjectView(CeoProjects):
     """ Hr can get all and retrieve project details"""
-    def get(self, request, pk=None):
-        if pk:
-            print(pk)
-            user = User.objects.filter(pk=pk)
-            print(user)
-            if not user:
-                return Response({'status': 'invalid username or id'})
-            serializer = ProjectSerializer(Project.objects.get(pk=pk))
-            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
-        serializer = ProjectSerializer(Project.objects.all(), many=True)
-        return Response(serializer.data)
+    pass
 
 
 class EmployeeDetail(APIView):
     """ Employee can get self profile details.
     """
-    def get(self, request):
-        # if request.auth is None:
-        #     pass
-        user = request.user
-        serializer = EmployeeSerializer(request.user)
-        return Response(serializer.data)
+    def get(self, request, pk=None):
+        if pk:
+            user = User.objects.filter(pk=pk)
+            if not user:
+                return Response({"status": "invalid username or id"})
+            serializer = EmployeeSerializer(User.objects.get(pk=pk))
+            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+        user = User.objects.all()
+        serializer = EmployeeSerializer(user, many=True)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
 
-class EmployeeProject(APIView):
+class EmployeeProject(CeoProjects):
+    """ get projects details.
     """
-    get projects details.
-    """
-    http_method_names = ['get', 'head']
-
-    def get(self, request):
-        project = Project.objects.get('user_id')
-        # detail = request.user
-        # print("detail:", detail)
-        serializer = ProjectSerializer(request.user, many=True)
-        return Response(serializer.data)
-
+    pass
     # def dispatch(self, request, *args, **kwargs):
     #     view_responce = lambda x: super(CeoManage, self).dispatch(request, *args, **kwargs)
     #     if request.user.is_authenticated:

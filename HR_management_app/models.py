@@ -61,7 +61,7 @@ class User(AbstractUser):
 
 class Project(models.Model):
     """ Assign projects to employees """
-    project_name = models.CharField(max_length=50, default=None)
+    project_name = models.CharField(max_length=50, default=None, unique=True)
     project_owner = models.CharField(max_length=50, default=None, null=True)
     budget = models.CharField(max_length=15, null=True)
     owner_address = models.CharField(max_length=200, null=True, blank=True)
@@ -79,7 +79,7 @@ class Project(models.Model):
 
 class ProjectDevelopment(models.Model):
     """ Project Development status """
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_fields')
     team_leader = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_leader')
     team = models.ManyToManyField(User)
     dead_line = models.DateField(default=None)

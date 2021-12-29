@@ -33,11 +33,14 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 class ProjectDevelopmentSerializer(serializers.ModelSerializer):
     """ ProjectDevelopment Serializer model class """
+    project = serializers.StringRelatedField(read_only=True)
+    team_leader = serializers.StringRelatedField(read_only=True)
+    team = serializers.StringRelatedField(many=True, read_only=True)
 
     class Meta:
         """ User ProjectDevelopment serializer Meta class """
         model = ProjectDevelopment
-        fields = '__all__'
+        fields = ['id', 'project', 'team_leader', 'team', 'dead_line', 'progress', 'project']
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
