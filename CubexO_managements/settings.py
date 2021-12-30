@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
-    'Ceo_management_app'
+    'Ceo_management_app',
     'HR_management_app',
 
 ]
