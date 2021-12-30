@@ -1,10 +1,11 @@
+
 from django.http import HttpResponse, Http404
 from rest_framework.viewsets import ModelViewSet
-from .models import User, Project, ProjectDevelopment, Attendance
-from .serializers import EmployeeSerializer, ProjectSerializer, ProjectDevelopmentSerializer, AttendanceSerializer
+from .models import User, Project, ProjectDevelopment
+from .serializers import EmployeeSerializer, ProjectSerializer, ProjectDevelopmentSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import viewsets, status, generics
+from rest_framework import status, generics
 
 
 # Create your views here.
@@ -28,6 +29,7 @@ def check_role_ceo():
 
 class projectStatus(APIView):
     """ Project status change"""
+
     def patch(self, request, pk):
         project = Project.objects.get(pk=pk)
 
@@ -38,6 +40,7 @@ class projectStatus(APIView):
 class CeoManage(APIView):
     """ get users
     """
+
     def get(self, request, pk=None):
         if pk:
             user = User.objects.filter(pk=pk)
@@ -86,13 +89,13 @@ class CeoManage(APIView):
 class CeoProjects(APIView):
     """ company head can get project detail
     """
+
     def get(self, request, pk=None):
         if pk:
             project = Project.objects.filter(pk=pk)
             if not project:
                 return Response({'status': 'invalid username or id'})
             serializer = ProjectSerializer(Project.objects.get(pk=pk))
-            print(serializer)
             return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
         serializer = ProjectSerializer(Project.objects.all(), many=True)
         return Response(serializer.data)
@@ -100,6 +103,7 @@ class CeoProjects(APIView):
 
 class CeoUpdateProject(APIView):
     """ company head can retrieve Update and delete project detail """
+
     def post(self, request):
         serializer = ProjectSerializer(data=request.data)
         if serializer.is_valid():
@@ -109,7 +113,10 @@ class CeoUpdateProject(APIView):
 
     def patch(self, request, pk):
         if pk:
-            serializer = ProjectSerializer(Project.objects.filter(id=pk), data=request.data, partial=True)
+            try:
+                serializer = ProjectSerializer(Project.objects.get(pk=pk), data=request.data, partial=True)
+            except Exception:
+                return Response({'error': 'matching query does not exist'})
             if serializer.is_valid():
                 serializer.save()
                 return Response({"status": "success", "data": serializer.data})
@@ -129,10 +136,59 @@ class CeoUpdateProject(APIView):
             return Response({'error': 'user id not found'})
 
 
-class DevelopmentStatus(generics.ListCreateAPIView):
+class DevelopmentStatus(APIView):
     """ Ceo can get Project Development status and make update"""
-    serializer_class = ProjectDevelopmentSerializer
-    queryset = ProjectDevelopment.objects.all()
+
+    def get(self, request, pk=None):
+        if pk:
+            try:
+                project = ProjectDevelopment.objects.get(pk=pk)
+            except Exception:
+                return Response({'error': 'id does not exist'})
+            if not project:
+                Response({'error': "Not have any detail"})
+            serializer = ProjectDevelopmentSerializer(ProjectDevelopment.objects.get(pk=pk))
+            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+        serializer = ProjectDevelopmentSerializer(ProjectDevelopment.objects.all(), many=True)
+        return Response(serializer.data)
+
+
+class AddDevelopmentStatus(APIView):
+    """ Create developments status """
+
+    def post(self, request):
+        serializer = ProjectDevelopmentSerializer(data=request.data)
+        print(serializer)
+        if serializer.is_valid():
+            print('Hii')
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+        if pk:
+            try:
+                serializer = ProjectDevelopmentSerializer(ProjectDevelopment.objects.get(pk=pk), data=request.data,
+                                                          partial=True)
+            except Exception:
+                return Response({'error': 'matching query does not exist'})
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"status": "success", "data": serializer.data})
+            else:
+                return Response({"status": "error", "data": serializer.errors})
+        else:
+            return Response({"status": "invalid detail or attribute"})
+
+    def delete(self, request, pk=None):
+        if pk:
+            development_status = ProjectDevelopment.objects.filter(pk=pk)
+            if not development_status:
+                return Response({'status': 'id not found'})
+            development_status.delete()
+            return Response({"status": "success", "data": "Item Deleted"})
+        else:
+            return Response({'error': 'user id not found'})
 
 
 class HrAllEmployeeView(ModelViewSet):
@@ -153,19 +209,12 @@ class HrProjectView(CeoProjects):
     pass
 
 
-class EmployeeDetail(APIView):
+class EmployeeDetail(CeoProjects):
     """ Employee can get self profile details.
     """
+
     def get(self, request, pk=None):
-        if pk:
-            user = User.objects.filter(pk=pk)
-            if not user:
-                return Response({"status": "invalid username or id"})
-            serializer = EmployeeSerializer(User.objects.get(pk=pk))
-            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
-        user = User.objects.all()
-        serializer = EmployeeSerializer(user, many=True)
-        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+        super(EmployeeDetail, self).get(request, pk)
 
 
 class EmployeeProject(CeoProjects):

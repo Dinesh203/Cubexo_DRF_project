@@ -1,9 +1,7 @@
-import datetime
 
 from django.db import models
 from .manager import CustomUserManager
 from django.contrib.auth.models import AbstractUser
-import datetime
 
 # Create your models here.
 
@@ -74,6 +72,7 @@ class Project(models.Model):
 
     @property
     def status_message(self):
+        """ ok"""
         return "Running" if self.status else "Closed"
 
 
@@ -81,8 +80,8 @@ class ProjectDevelopment(models.Model):
     """ Project Development status """
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_fields')
     team_leader = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_leader')
-    team = models.ManyToManyField(User)
-    dead_line = models.DateField(default=None)
+    team = models.ManyToManyField(User, related_name='User', blank=True)
+    dead_line = models.DateField()
     progress = models.TextField(max_length=1000, null=True, default='working on')
 
     def __str__(self):
