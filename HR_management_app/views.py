@@ -3,7 +3,7 @@ from rest_framework.viewsets import ModelViewSet
 from .models import User
 from .serializers import EmployeeSerializer
 from rest_framework import status, generics
-from Ceo_management_app.views import CeoProjects
+from Ceo_management_app.views import CeoProjects, CeoManage
 
 # Create your views here.
 
@@ -26,12 +26,13 @@ class HrProjectView(CeoProjects):
     pass
 
 
-class EmployeeDetail(CeoProjects):
+class EmployeeDetail(CeoManage):
     """ Employee can get self profile details.
     """
-
-    def get(self, request, pk=None):
-        super(EmployeeDetail, self).get(request, pk)
+    pass
+    # def get(self, request, pk=None):
+    #     """Get Employee Detail"""
+    #     super(EmployeeDetail, self).get(request, pk)
 
 
 class EmployeeProject(CeoProjects):

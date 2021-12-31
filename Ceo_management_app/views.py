@@ -1,9 +1,13 @@
+""" This is IT company management app views"""
 from django.http import HttpResponse, Http404
 from HR_management_app.models import User, Project, ProjectDevelopment
-from HR_management_app.serializers import EmployeeSerializer, ProjectSerializer, ProjectDevelopmentSerializer
+from HR_management_app.serializers import EmployeeSerializer, ProjectSerializer, ProjectDevelopmentSerializer, \
+    ChangePasswordSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
+from Ceo_management_app.permissions import IsCompanyManager
+from rest_framework.permissions import IsAuthenticated
 
 
 # Create your views here.
@@ -11,18 +15,10 @@ from rest_framework import status
 
 def get_project_object(pk):
     """ get User detail """
+    """ get User detail """
     try:
         return Project.objects.get(pk=pk)
     except User.DoesNotExist:
-        raise Http404
-
-
-def check_role_ceo():
-    """ Check Role"""
-    user = User.objects.get('role' == 'CEO')
-    if user:
-        return user
-    else:
         raise Http404
 
 
@@ -39,6 +35,8 @@ class projectStatus(APIView):
 class CeoManage(APIView):
     """ get users
     """
+
+    permission_classes = (IsCompanyManager,)
 
     def get(self, request, pk=None):
         if pk:
@@ -183,8 +181,14 @@ class AddDevelopmentStatus(APIView):
         if pk:
             development_status = ProjectDevelopment.objects.filter(pk=pk)
             if not development_status:
-                return Response({'status': 'id not found'})
+                return Response({'status': 'user id not found'})
             development_status.delete()
             return Response({"status": "success", "data": "Item Deleted"})
         else:
             return Response({'error': 'user id not found'})
+
+
+class ChangePasswordView(generics.UpdateAPIView):
+    """ Employees/User can Change password """
+    queryset = User.objects.all()
+    serializer_class = ChangePasswordSerializer
