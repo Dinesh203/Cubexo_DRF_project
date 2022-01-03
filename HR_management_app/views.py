@@ -39,6 +39,8 @@ class EmployeeProject(CeoProjects):
     """ get projects details.
     """
     pass
+
+
     # def dispatch(self, request, *args, **kwargs):
     #     view_responce = lambda x: super(CeoManage, self).dispatch(request, *args, **kwargs)
     #     if request.user.is_authenticated:

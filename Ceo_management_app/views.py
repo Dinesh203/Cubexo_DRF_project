@@ -7,7 +7,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
 from Ceo_management_app.permissions import IsCompanyManager
-from rest_framework.permissions import IsAuthenticated
 
 
 # Create your views here.
@@ -22,20 +21,23 @@ def get_project_object(pk):
         raise Http404
 
 
-class projectStatus(APIView):
+class ChangeProjectStatus(APIView):
     """ Project status change"""
+    print("hello")
 
     def patch(self, request, pk):
+        print("request", request.data['status'])
+        print("request", request.user.role)
+        print("pk", pk)
         project = Project.objects.get(pk=pk)
-
         project.status = False if project.status else True
         project.save()
+        return Response(status.HTTP_200_OK)
 
 
 class CeoManage(APIView):
-    """ get users
-    """
-
+    """ company manager can get details, add new employee, update detail, and delete
+    employees """
     permission_classes = (IsCompanyManager,)
 
     def get(self, request, pk=None):
@@ -155,9 +157,7 @@ class AddDevelopmentStatus(APIView):
 
     def post(self, request):
         serializer = ProjectDevelopmentSerializer(data=request.data)
-        print(serializer)
         if serializer.is_valid():
-            print('Hii')
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -190,5 +190,7 @@ class AddDevelopmentStatus(APIView):
 
 class ChangePasswordView(generics.UpdateAPIView):
     """ Employees/User can Change password """
+
     queryset = User.objects.all()
     serializer_class = ChangePasswordSerializer
+

@@ -1,6 +1,5 @@
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from django.contrib.auth.hashers import make_password
 from .models import User, Project, ProjectDevelopment, Attendance
 from django.contrib.auth.hashers import make_password
 
@@ -55,31 +54,30 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
 class ChangePasswordSerializer(serializers.ModelSerializer):
     """ Change password serializer class"""
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True, required=True)
+    new_password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    confirm_password = serializers.CharField(write_only=True, required=True)
     old_password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ('old_password', 'password', 'password2')
+        fields = ('old_password', 'new_password', 'confirm_password')
 
     def validate(self, attrs):
-        print(attrs)
-        if attrs['password'] != attrs['password2']:
+        print("attrs", attrs)
+        if attrs['new_password'] != attrs['confirm_password']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
-
         return attrs
 
     def validate_old_password(self, value):
         """ Validate old password """
         user = self.context['request'].user
+        print("user", user.role)
         if not user.check_password(value):
             raise serializers.ValidationError({"old_password": "Old password is not correct"})
         return value
 
     def update(self, instance, validated_data):
-        print(validated_data)
-        instance.set_password(validated_data['password'])
+        """ update serialize instance in hasher form """
+        instance.set_password(validated_data['new_password'])
         instance.save()
-
         return instance
