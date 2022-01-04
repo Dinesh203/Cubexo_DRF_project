@@ -13,10 +13,5 @@ urlpatterns = [
     path("Hr_project_get/", HrProjectView.as_view(), name='Hr_project_get'),
     path("Hr_project_get/<int:pk>", HrProjectView.as_view(), name='Hr_project_retrieve'),
 
-    path('employee_detail/', EmployeeDetail.as_view(), name='emp_get_self_detail'),
-    path('employee_detail/<int:pk>', EmployeeDetail.as_view(), name='emp_get_self_detail'),
-    path('employee_project/', EmployeeProject.as_view(), name='emp_get_project_detail'),
-    path('employee_project/<int:pk>', EmployeeProject.as_view(), name='emp_Retrieve_project')
-
 
 ]

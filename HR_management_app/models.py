@@ -78,10 +78,10 @@ class Project(models.Model):
 
 class ProjectDevelopment(models.Model):
     """ Project Development status """
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_fields', blank=True, null=True)
-    team_leader = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_leader', blank=True, null=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_fields', null=True)
+    team_leader = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_leader', null=True)
     team = models.ManyToManyField(User, related_name='User', blank=True)
-    dead_line = models.DateField(blank=True, null=True)
+    dead_line = models.DateField(null=True)
     progress = models.TextField(max_length=1000, null=True, default='working on')
 
     def __str__(self):

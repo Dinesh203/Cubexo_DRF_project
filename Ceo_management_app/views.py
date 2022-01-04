@@ -6,6 +6,7 @@ from HR_management_app.serializers import EmployeeSerializer, ProjectSerializer,
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
+from rest_framework.permissions import IsAuthenticated
 from Ceo_management_app.permissions import IsCompanyManager
 
 
@@ -38,7 +39,7 @@ class ChangeProjectStatus(APIView):
 class CeoManage(APIView):
     """ company manager can get details, add new employee, update detail, and delete
     employees """
-    permission_classes = (IsCompanyManager,)
+    permission_classes = (IsAuthenticated, IsCompanyManager)
 
     def get(self, request, pk=None):
         if pk:
@@ -60,7 +61,6 @@ class CeoManage(APIView):
 
     def patch(self, request, pk=None):
         if pk:
-            print("pk", pk)
             try:
                 serializer_data = EmployeeSerializer(User.objects.get(id=pk), data=request.data, partial=True)
             except Exception as e:
@@ -136,8 +136,8 @@ class CeoUpdateProject(APIView):
 
 
 class DevelopmentStatus(APIView):
-    """ Ceo can get Project Development status and make update"""
-
+    """ Ceo can get Project Development status and make update
+    """
     def get(self, request, pk=None):
         if pk:
             try:

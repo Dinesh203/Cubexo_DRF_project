@@ -25,27 +25,3 @@ class HrProjectView(CeoProjects):
     """ Hr can get all and retrieve project details"""
     pass
 
-
-class EmployeeDetail(CeoManage):
-    """ Employee can get self profile details.
-    """
-    pass
-    # def get(self, request, pk=None):
-    #     """Get Employee Detail"""
-    #     super(EmployeeDetail, self).get(request, pk)
-
-
-class EmployeeProject(CeoProjects):
-    """ get projects details.
-    """
-    pass
-
-
-    # def dispatch(self, request, *args, **kwargs):
-    #     view_responce = lambda x: super(CeoManage, self).dispatch(request, *args, **kwargs)
-    #     if request.user.is_authenticated:
-    #         if request.user.role == "CEO":
-    #             return view_responce(None)
-    #         elif request.user.role == "HR":
-    #             pass
-    #     return HttpResponse("You do not have permission")
