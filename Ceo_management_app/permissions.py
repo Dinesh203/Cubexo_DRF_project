@@ -15,6 +15,16 @@ class IsCompanyManager(BasePermission):
             return False
 
 
+class CheckEmployeeStatus(BasePermission):
+    """ check employee status is active or not.
+    """
+    def has_permission(self, request, view):
+        """ Check employee queryset status """
+        print("request", request.user.is_employee)
+        if request.user.is_employee:
+            return True
+        else:
+            return False
 # class CheckEmployeeStatus(BasePermission):
 #     """ check current employee status is active or deactivate"""
 #

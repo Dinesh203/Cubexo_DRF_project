@@ -7,19 +7,40 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
-from Ceo_management_app.permissions import IsCompanyManager
+from Ceo_management_app.permissions import IsCompanyManager, CheckEmployeeStatus
 
 
 # Create your views here.
 
+class ActiveEmployees(generics.ListAPIView):
+    """ check employee status is active or not.
+    """
+    serializer_class = EmployeeSerializer
 
-def get_project_object(pk):
-    """ get User detail """
-    """ get User detail """
-    try:
-        return Project.objects.get(pk=pk)
-    except User.DoesNotExist:
-        raise Http404
+    def get_queryset(self):
+        if self.request.user.is_employee:
+            return User.objects.all()
+        else:
+            return Response({'error': 'Not authorised User or employee'})
+
+
+# class ActiveEmployees(APIView):
+#     """ check employee status is active or not.
+#     """
+#     permission_classes = [CheckEmployeeStatus]
+#
+#     def get(self, request, pk=None):
+#         if request.user.is_employee:
+#             if pk:
+#                 user = User.objects.filter(pk=pk)
+#                 if not user:
+#                     return Response({"status": "invalid user or id"})
+#                 serializer = EmployeeSerializer(User.objects.get(pk=pk))
+#                 return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+#             user = User.objects.filter(is_employee=False)
+#             serializer = EmployeeSerializer(user, many=True)
+#             return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+#         return Response({'error': 'Not authorised User or employee'})
 
 
 class ChangeProjectStatus(APIView):
@@ -39,13 +60,13 @@ class ChangeProjectStatus(APIView):
 class CeoManage(APIView):
     """ company manager can get details, add new employee, update detail, and delete
     employees """
-    permission_classes = (IsAuthenticated, IsCompanyManager)
+    permission_classes = (IsCompanyManager,)
 
     def get(self, request, pk=None):
         if pk:
             user = User.objects.filter(pk=pk)
             if not user:
-                return Response({"status": "invalid username or id"})
+                return Response({"status": "invalid user or id"})
             serializer = EmployeeSerializer(User.objects.get(pk=pk))
             return Response({"data": serializer.data}, status=status.HTTP_200_OK)
         user = User.objects.all()

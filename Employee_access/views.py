@@ -2,6 +2,7 @@
 from django.shortcuts import render
 from Ceo_management_app.views import CeoManage, CeoProjects
 from rest_framework.response import Response
+from rest_framework import status
 from HR_management_app.serializers import EmployeeSerializer
 from HR_management_app.models import User
 
@@ -22,7 +23,6 @@ class EmployeeDetail(CeoManage):
         user = User.objects.all()
         serializer = EmployeeSerializer(user, many=True)
         return Response({"data": serializer.data}, status=status.HTTP_200_OK)
-
 
 
 class EmployeeProject(CeoProjects):
