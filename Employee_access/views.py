@@ -1,33 +1,30 @@
-
-from django.shortcuts import render
 from Ceo_management_app.views import CeoManage, CeoProjects
 from rest_framework.response import Response
+from Ceo_management_app.permissions import CheckEmployeeStatus
 from rest_framework import status
+from rest_framework.views import APIView
 from HR_management_app.serializers import EmployeeSerializer
 from HR_management_app.models import User
+
 
 # Create your views here.
 
 
-class EmployeeDetail(CeoManage):
+class EmployeeDetail(APIView):
     """ Employee can get self profile details.
     """
+    permission_classes = (CheckEmployeeStatus,)
 
-    def get(self, request, pk=None):
-        if pk:
-            user = User.objects.filter(pk=pk)
-            if not user:
-                return Response({"status": "invalid username or id"})
-            serializer = EmployeeSerializer(User.objects.get(pk=pk))
-            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
-        user = User.objects.all()
-        serializer = EmployeeSerializer(user, many=True)
+    def get(self, request):
+        user = User.objects.get(pk=request.user.pk)
+        serializer = EmployeeSerializer(user)
         return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
 
 class EmployeeProject(CeoProjects):
     """ get projects details.
     """
+    permission_classes = (CheckEmployeeStatus,)
     pass
 
     # def dispatch(self, request, *args, **kwargs):

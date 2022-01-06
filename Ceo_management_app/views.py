@@ -12,41 +12,9 @@ from Ceo_management_app.permissions import IsCompanyManager, CheckEmployeeStatus
 
 # Create your views here.
 
-class ActiveEmployees(generics.ListAPIView):
-    """ check employee status is active or not.
-    """
-    serializer_class = EmployeeSerializer
-
-    def get_queryset(self):
-        if self.request.user.is_employee:
-            return User.objects.all()
-        else:
-            return Response({'error': 'Not authorised User or employee'})
-
-
-# class ActiveEmployees(APIView):
-#     """ check employee status is active or not.
-#     """
-#     permission_classes = [CheckEmployeeStatus]
-#
-#     def get(self, request, pk=None):
-#         if request.user.is_employee:
-#             if pk:
-#                 user = User.objects.filter(pk=pk)
-#                 if not user:
-#                     return Response({"status": "invalid user or id"})
-#                 serializer = EmployeeSerializer(User.objects.get(pk=pk))
-#                 return Response({"data": serializer.data}, status=status.HTTP_200_OK)
-#             user = User.objects.filter(is_employee=False)
-#             serializer = EmployeeSerializer(user, many=True)
-#             return Response({"data": serializer.data}, status=status.HTTP_200_OK)
-#         return Response({'error': 'Not authorised User or employee'})
-
-
 class ChangeProjectStatus(APIView):
-    """ Project status change"""
-    print("hello")
-
+    """ Project status change
+    """
     def patch(self, request, pk):
         print("request", request.data['status'])
         print("request", request.user.role)
@@ -60,7 +28,7 @@ class ChangeProjectStatus(APIView):
 class CeoManage(APIView):
     """ company manager can get details, add new employee, update detail, and delete
     employees """
-    permission_classes = (IsCompanyManager,)
+    permission_classes = (IsCompanyManager, CheckEmployeeStatus)
 
     def get(self, request, pk=None):
         if pk:

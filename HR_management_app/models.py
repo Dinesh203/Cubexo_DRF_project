@@ -10,6 +10,7 @@ POSITION_CHOICES = (
     ("CEO", "CEO"),
     ("HR", "HR"),
     ("Project Manager", "PROJECT MANAGER"),
+    ("business analytics", "BUSINESS ANALYTICS"),
     ("Technical Lead/Team Leader", "TECHNICAL LEAD/TEAM LEADER"),
     ("Chief Architect", "CHIEF ARCHITECT"),
     ("Software Architect", "SOFTWARE ARCHITECT"),
@@ -45,7 +46,7 @@ class User(AbstractUser):
     is_employee = models.BooleanField(default=False)
     role = models.CharField(max_length=100, choices=POSITION_CHOICES, default=None, null=True)
     employment_date = models.DateField(auto_now_add=True)
-    contact = models.CharField(max_length=15)
+    contact = models.CharField(max_length=12)
     date_of_birth = models.DateField(default=None, blank=True, null=True)
     address = models.CharField(max_length=15, default="", blank=True)
 
@@ -57,10 +58,24 @@ class User(AbstractUser):
         return self.email
 
 
+class ClientDetail(models.Model):
+    """ Client details"""
+    name = models.CharField(max_length=70)
+    email = models.EmailField(max_length=70, unique=True)
+    contact = models.IntegerField()
+    address = models.CharField(max_length=50)
+    image = models.ImageField(upload_to='media/', null=True)
+    date = models.DateField(auto_now_add=True)
+    belong_to = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
 class Project(models.Model):
     """ Assign projects to employees """
     project_name = models.CharField(max_length=50, default=None, unique=True)
-    project_owner = models.CharField(max_length=50, default=None, null=True)
+    project_owner = models.ForeignKey(ClientDetail, on_delete=models.CASCADE)
     budget = models.CharField(max_length=15, null=True)
     owner_address = models.CharField(max_length=200, null=True, blank=True)
     descriptions = models.TextField(max_length=1000)
@@ -79,9 +94,9 @@ class Project(models.Model):
 class ProjectDevelopment(models.Model):
     """ Project Development status """
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_fields', null=True)
-    team_leader = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_leader', null=True)
+    project_manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_leader', null=True)
     team = models.ManyToManyField(User, related_name='User', blank=True)
-    dead_line = models.DateField(null=True)
+    dead_line = models.DateField()
     progress = models.TextField(max_length=1000, null=True, default='working on')
 
     def __str__(self):

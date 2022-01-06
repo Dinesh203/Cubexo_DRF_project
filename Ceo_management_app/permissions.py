@@ -8,7 +8,7 @@ class IsCompanyManager(BasePermission):
 
     def has_permission(self, request, view):
         """ Check permissions """
-        print("request", request.user.role)
+        print("role", request.user.role)
         if request.user.role == 'CEO' or request.user.role == 'HR':
             return True
         else:
@@ -20,28 +20,8 @@ class CheckEmployeeStatus(BasePermission):
     """
     def has_permission(self, request, view):
         """ Check employee queryset status """
-        print("request", request.user.is_employee)
+        print("is_employee", request.user.is_employee)
         if request.user.is_employee:
             return True
         else:
-            return False
-# class CheckEmployeeStatus(BasePermission):
-#     """ check current employee status is active or deactivate"""
-#
-#     def has_permission(self, request, view):
-#         """ Check permissions """
-#         print("request", request.user)
-#         if request.user.role == 'CEO' or request.user.role == 'HR':
-#             return True
-#         else:
-#             return False
-
-    # def has_object_permission(self, request, view, obj):
-    #     """ object level permissions """
-    #     print("object_permissions")
-    #     print("obj", obj)
-    #     print("check role", request.user.is_staff)
-    #     if request.user.is_staff:
-    #         return True
-    #
-    #     return obj == request.user
+            return

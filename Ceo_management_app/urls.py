@@ -16,6 +16,7 @@ urlpatterns = [
     path('add_development_status/', AddDevelopmentStatus.as_view(), name='get_ret_development_status'),
     path('add_development_status/<int:pk>', AddDevelopmentStatus.as_view(), name='add_development_status'),
     path('change_project_status/<int:pk>', ChangeProjectStatus.as_view(), name='change_project_status'),
+    # path('employee_status/', EmployeesStatus.as_view(), name='employee_status'),
 
 
 ]
